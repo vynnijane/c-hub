@@ -117,6 +117,24 @@
     if (activeLoreTab === 'json')    el.innerHTML = renderJsonTab(lb);
   }
 
+  /* ── Tags ── */
+  function addLbTag(tag) {
+    const lb = active(); if (!lb) return;
+    if (!lb.tags) lb.tags = [];
+    const t = tag.trim();
+    if (t && !lb.tags.includes(t)) { lb.tags.push(t); renderTabContent(); }
+  }
+  function removeLbTag(i) {
+    const lb = active(); if (!lb) return;
+    lb.tags.splice(i, 1); renderTabContent();
+  }
+  function handleLbTagKey(e) {
+    if (e.key !== 'Enter' && e.key !== ',') return;
+    e.preventDefault();
+    const val = e.target.value.trim();
+    if (val) { addLbTag(val); e.target.value = ''; }
+  }
+
   function renderEntriesTab(lb) {
     const { esc } = UI();
     const entries = lb.entries || [];
@@ -181,6 +199,17 @@
       <div class="field-label">Description</div>
       <textarea class="field-textarea" rows="2" placeholder="What this lorebook covers…"
         oninput="App.Modules.Lorebooks.descChange(this.value)">${esc(lb.description || '')}</textarea>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Tags <span class="field-hint">for filtering in overview · Enter or , to add</span></div>
+      <div class="tags-editor-wrap" onclick="this.querySelector('.tags-editor-input').focus()">
+        ${(lb.tags || []).map((t, i) =>
+          `<span class="tag-chip">${esc(t)}<button class="tag-chip-remove"
+            onclick="App.Modules.Lorebooks.removeLbTag(${i})">×</button></span>`
+        ).join('')}
+        <input class="tags-editor-input" placeholder="${(lb.tags || []).length ? '' : 'Add tag…'}"
+          onkeydown="App.Modules.Lorebooks.handleLbTagKey(event)">
+      </div>
     </div>
     <div class="section-divider">
       <div class="section-divider-line"></div>
@@ -342,6 +371,7 @@
     newEntity, selectEntity, deleteEntity,
     switchTab, nameChange, descChange,
     addEntry, removeEntry, toggleEntry, updateEntry,
+    addLbTag, removeLbTag, handleLbTagKey,
     toggleAttach, saveLorebook, exportLorebook, importLorebook, handleImport,
     getLorebooks: () => lorebooks,
     isDirty: () => false,

@@ -143,9 +143,15 @@
       </div>
     </div>
 
+    <!-- Overview page (Characters / Lorebooks / Personas gallery) -->
+    <div class="content-page" id="page-overview">
+      <div id="overviewContainer" style="height:100%;overflow:hidden;display:flex;flex-direction:column;"></div>
+    </div>
+
     <!-- Editor page (shared by all modules) -->
     <div class="content-page" id="page-editor">
       <div class="editor-header">
+        <div class="editor-breadcrumb hidden" id="editorBreadcrumb"></div>
         <div class="editor-tabs-bar" id="editorTabsBar"></div>
         <div class="editor-actions-bar" id="editorActionsBar"></div>
       </div>
@@ -288,7 +294,7 @@
     <div class="search-footer">
       <span>↵ open · Esc close</span>
       <span style="margin-left:auto;">
-        <a href="#" onclick="event.preventDefault();App.closeSearch();document.getElementById('page-search').classList.add('active');document.getElementById('page-welcome').classList.remove('active');document.getElementById('page-editor').classList.remove('active');">
+        <a href="#" onclick="event.preventDefault();App.closeSearch();document.getElementById('page-search').classList.add('active');document.getElementById('page-welcome').classList.remove('active');document.getElementById('page-editor').classList.remove('active');document.getElementById('page-overview').classList.remove('active');">
           Find &amp; Replace →
         </a>
       </span>
@@ -365,6 +371,7 @@
 <script src="js/bio-editor.js"></script>
 <script src="js/sync.js"></script>
 <script src="js/search.js"></script>
+<script src="js/overview.js"></script>
 <script src="js/modules/characters.js"></script>
 <script src="js/modules/lorebooks.js"></script>
 <script src="js/modules/personas.js"></script>

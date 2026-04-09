@@ -713,6 +713,563 @@ input[type="file"] { display: none; }
   animation: spin 0.7s linear infinite;
 }
 
+/* ── OVERVIEW PAGE ── */
+
+/* Page shell */
+.overview-page-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Breadcrumb (shown when inside a folder) */
+.overview-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.overview-breadcrumb-btn {
+  background: none;
+  border: none;
+  color: var(--ember);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  font-family: inherit;
+}
+.overview-breadcrumb-btn:hover { text-decoration: underline; }
+.overview-breadcrumb-sep { color: var(--text4); }
+.overview-breadcrumb-current { color: var(--text2); }
+
+/* Toolbar */
+.overview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.overview-toolbar-left  { display: flex; align-items: center; gap: 6px; }
+.overview-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+/* Search inside overview */
+.overview-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.overview-search-icon {
+  position: absolute;
+  left: 8px;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+.overview-search-input {
+  padding: 5px 10px 5px 28px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 12.5px;
+  width: 180px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  font-family: inherit;
+}
+.overview-search-input:focus {
+  border-color: var(--ember);
+  box-shadow: 0 0 0 3px var(--ember-subtle);
+  background: var(--bg2);
+}
+.overview-search-input::placeholder { color: var(--text4); }
+
+/* Sort select */
+.overview-sort-select {
+  padding: 5px 28px 5px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text2);
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%234a4438' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  font-family: inherit;
+  transition: border-color var(--transition);
+}
+.overview-sort-select:focus { border-color: var(--ember); }
+.overview-sort-select option { background: var(--bg3); color: var(--text); }
+
+/* Tag wrap */
+.overview-tag-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+/* Filter tag chips (selected tags in toolbar) */
+.filter-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px 2px 8px;
+  background: var(--ember-glow);
+  border: 1px solid var(--ember);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--ember);
+  white-space: nowrap;
+}
+.filter-tag-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ember);
+  font-size: 12px;
+  line-height: 1;
+  padding: 0 1px;
+  opacity: 0.7;
+  font-family: monospace;
+}
+.filter-tag-remove:hover { opacity: 1; }
+
+/* Tag dropdown popup */
+.overview-tag-dropdown {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  min-width: 160px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.overview-tag-item {
+  padding: 7px 14px;
+  font-size: 12.5px;
+  cursor: pointer;
+  color: var(--text2);
+  transition: background var(--transition);
+}
+.overview-tag-item:hover { background: var(--bg4); color: var(--text); }
+.overview-tag-empty {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text4);
+  font-style: italic;
+}
+
+/* Batch operations bar */
+.overview-batch-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 24px;
+  background: var(--ember-subtle);
+  border-bottom: 1px solid var(--ember);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* Active button state */
+.btn-active {
+  background: var(--ember-subtle) !important;
+  border-color: var(--ember) !important;
+  color: var(--ember) !important;
+}
+
+/* Scrollable overview content */
+.overview-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* ── CARD GRID (Characters, Personas) ── */
+.ov-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Base card */
+.ov-card {
+  position: relative;
+  cursor: pointer;
+  border-radius: var(--radius-lg);
+  transition: transform var(--transition);
+}
+.ov-card:hover { transform: translateY(-3px); }
+.ov-card.selected .ov-card-body { border-color: var(--ember); box-shadow: 0 0 0 2px var(--ember); }
+
+/* Card image body */
+.ov-card-body {
+  aspect-ratio: 2/3;
+  border-radius: var(--radius-lg);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  transition: border-color var(--transition);
+}
+.ov-card:hover .ov-card-body { border-color: var(--border2); }
+.ov-card.item-card:hover .ov-card-body { border-color: var(--ember); }
+
+.ov-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ov-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  opacity: 0.25;
+  color: var(--text3);
+}
+
+/* Selection overlay */
+.ov-select-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 8px;
+  border-radius: var(--radius-lg);
+  transition: background var(--transition);
+}
+.ov-select-overlay.checked { background: rgba(232,98,42,0.25); }
+.ov-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: 2px solid #fff;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #fff;
+  font-weight: bold;
+  line-height: 1;
+}
+.ov-select-overlay.checked .ov-checkbox {
+  background: var(--ember);
+  border-color: var(--ember);
+}
+
+/* NSFW / badge overlays */
+.ov-card-nsfw {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+}
+.ov-card-badge {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 5px;
+}
+
+/* Card label (name below card) */
+.ov-card-label {
+  margin-top: 7px;
+  padding: 0 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ov-card-name {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.ov-card-meta {
+  font-size: 10.5px;
+  color: var(--text4);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── FOLDER CARDS (in grid) ── */
+.ov-folder-card { position: relative; }
+
+/* Stacked background layers */
+.ov-folder-stack {
+  position: absolute;
+  width: 100%;
+  aspect-ratio: 2/3;
+  border-radius: var(--radius-lg);
+  background: var(--bg4);
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--border);
+}
+.stack-2 {
+  transform: rotate(3deg) translate(4px, -3px);
+  opacity: 0.6;
+  z-index: 0;
+}
+.stack-1 {
+  transform: rotate(-2deg) translate(-3px, 2px);
+  opacity: 0.4;
+  z-index: 0;
+}
+.ov-folder-card .ov-card-body {
+  position: relative;
+  z-index: 1;
+  background-color: var(--bg3);
+  background-size: cover;
+  background-position: center;
+}
+.ov-folder-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+}
+.ov-folder-icon { font-size: 32px; }
+
+/* Folder action buttons (rename/delete) */
+.ov-folder-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 5;
+  display: none;
+  gap: 4px;
+  flex-direction: column;
+}
+.ov-folder-card:hover .ov-folder-actions { display: flex; }
+.ov-folder-action-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text2);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+.ov-folder-action-btn:hover { background: var(--bg3); color: var(--text); }
+.ov-folder-action-btn.danger:hover { color: var(--danger); border-color: var(--danger); }
+
+/* ── LIST VIEW (Lorebooks) ── */
+.ov-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 800px;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Folder row in list */
+.ov-list-folder {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+}
+.ov-list-folder:hover { border-color: var(--border2); background: var(--bg4); }
+.ov-list-folder-icon { font-size: 18px; flex-shrink: 0; }
+.ov-list-folder-name { font-size: 13.5px; font-weight: 500; color: var(--text); flex: 1; }
+.ov-list-folder-count {
+  font-size: 11px;
+  color: var(--text4);
+  font-family: 'JetBrains Mono', monospace;
+  margin-right: 8px;
+}
+.ov-list-folder-actions {
+  display: none;
+  gap: 4px;
+}
+.ov-list-folder:hover .ov-list-folder-actions { display: flex; }
+
+/* List item row */
+.ov-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+}
+.ov-list-item:hover { border-color: var(--ember); background: var(--bg3); }
+.ov-list-item.selected { border-color: var(--ember); background: var(--ember-subtle); }
+.ov-list-item-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: center;
+}
+.ov-list-item-body { flex: 1; min-width: 0; }
+.ov-list-item-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.ov-list-item-meta {
+  font-size: 11.5px;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ov-inline-tag {
+  padding: 1px 6px;
+  background: var(--bg4);
+  border-radius: 3px;
+  font-size: 10.5px;
+  color: var(--text3);
+  border: 1px solid var(--border);
+}
+.ov-list-delete {
+  opacity: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text4);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 3px 7px;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.ov-list-item:hover .ov-list-delete { opacity: 1; }
+.ov-list-delete:hover { border-color: var(--danger); color: var(--danger); }
+.ov-list-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #fff;
+  font-weight: bold;
+  flex-shrink: 0;
+  background: var(--bg3);
+}
+.ov-list-checkbox.checked { background: var(--ember); border-color: var(--ember); }
+
+/* Editor breadcrumb (back navigation) */
+.editor-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 20px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.editor-breadcrumb-back {
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color var(--transition);
+}
+.editor-breadcrumb-back:hover { color: var(--ember); }
+
+/* Tags input in lorebook/persona editors */
+.tags-editor-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  padding: 6px 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-height: 36px;
+  cursor: text;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.tags-editor-wrap:focus-within {
+  border-color: var(--ember);
+  box-shadow: 0 0 0 3px var(--ember-subtle);
+}
+.tags-editor-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  color: var(--text);
+  font-size: 12.5px;
+  flex: 1;
+  min-width: 80px;
+  font-family: inherit;
+}
+.tags-editor-input::placeholder { color: var(--text4); }
+
 /* ── GDRIVE STATUS ── */
 .gdrive-status {
   display: flex;
