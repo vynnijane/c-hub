@@ -161,6 +161,18 @@
         placeholder="Character history, context…">${esc(p.backstory)}</textarea>
     </div>
 
+    <div class="field-group">
+      <div class="field-label">Tags <span class="field-hint">for filtering in overview · Enter or , to add</span></div>
+      <div class="tags-editor-wrap" onclick="this.querySelector('.tags-editor-input').focus()">
+        ${(p.tags || []).map((t, i) =>
+          `<span class="tag-chip">${esc(t)}<button class="tag-chip-remove"
+            onclick="App.Modules.Personas.removePersonaTag(${i})">×</button></span>`
+        ).join('')}
+        <input class="tags-editor-input" placeholder="${(p.tags || []).length ? '' : 'Add tag…'}"
+          onkeydown="App.Modules.Personas.handlePersonaTagKey(event)">
+      </div>
+    </div>
+
     <div class="section-divider">
       <div class="section-divider-line"></div>
       <div class="section-divider-label">Custom fields</div>
@@ -258,6 +270,24 @@
 
   function exportPersona() { exportAs('md'); }
 
+  /* ── Tags ── */
+  function addPersonaTag(tag) {
+    const p = active(); if (!p) return;
+    if (!p.tags) p.tags = [];
+    const t = tag.trim();
+    if (t && !p.tags.includes(t)) { p.tags.push(t); renderTabContent(); }
+  }
+  function removePersonaTag(i) {
+    const p = active(); if (!p) return;
+    p.tags.splice(i, 1); renderTabContent();
+  }
+  function handlePersonaTagKey(e) {
+    if (e.key !== 'Enter' && e.key !== ',') return;
+    e.preventDefault();
+    const val = e.target.value.trim();
+    if (val) { addPersonaTag(val); e.target.value = ''; }
+  }
+
   window.App = window.App || {};
   window.App.Modules = window.App.Modules || {};
   window.App.Modules.Personas = {
@@ -265,7 +295,9 @@
     newEntity, selectEntity, deleteEntity,
     nameChange, fieldChange,
     addCustomField, removeCustomField, updateCustomField,
+    addPersonaTag, removePersonaTag, handlePersonaTagKey,
     setActive, savePersona, exportPersona, exportAs,
+    getPersonas: () => personas,
     isDirty: () => false,
   };
 })();

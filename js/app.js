@@ -70,6 +70,9 @@
     });
   }
 
+  /* ── Overview modules: clicking header opens gallery ── */
+  const OVERVIEW_MODULES = ['characters', 'lorebooks', 'personas'];
+
   /* ── Module section toggle (accordion) ── */
   function toggleSection(module, forceOpen) {
     const section = document.getElementById('section-' + module);
@@ -78,6 +81,23 @@
     const isOpen = header.classList.contains('open');
     const open   = forceOpen !== undefined ? forceOpen : !isOpen;
     header.classList.toggle('open', open);
+
+    // For overview modules, navigating to the section also opens the overview page
+    if (open && OVERVIEW_MODULES.includes(module)) {
+      openOverview(module);
+    }
+  }
+
+  /* ── Open overview page for a module ── */
+  function openOverview(module) {
+    _activeModule = module;
+    document.getElementById('page-welcome').classList.remove('active');
+    document.getElementById('page-editor').classList.remove('active');
+    document.getElementById('page-search').classList.remove('active');
+    document.getElementById('page-overview').classList.add('active');
+    toggleSection(module, true);
+    updateHeaderLabel(module);
+    App.Overview.render(module);
   }
 
   /* ── Open editor for a module ── */
@@ -85,10 +105,30 @@
     _activeModule = module;
     document.getElementById('page-welcome').classList.remove('active');
     document.getElementById('page-editor').classList.add('active');
+    document.getElementById('page-overview').classList.remove('active');
     document.getElementById('page-search').classList.remove('active');
     // Ensure the sidebar section is expanded
     toggleSection(module, true);
     updateHeaderLabel(module);
+
+    // Breadcrumb back-navigation for overview modules
+    const breadcrumb = document.getElementById('editorBreadcrumb');
+    if (breadcrumb) {
+      if (OVERVIEW_MODULES.includes(module)) {
+        const icon  = { characters: '🎭', lorebooks: '📚', personas: '👤' }[module] || '';
+        const label = module.charAt(0).toUpperCase() + module.slice(1);
+        breadcrumb.innerHTML = `
+          <button class="editor-breadcrumb-back"
+            onclick="App.openOverview('${module}')">
+            ← ${icon} ${label}
+          </button>
+        `;
+        breadcrumb.classList.remove('hidden');
+      } else {
+        breadcrumb.innerHTML = '';
+        breadcrumb.classList.add('hidden');
+      }
+    }
   }
 
   /* ── Show welcome screen ── */
@@ -96,6 +136,7 @@
     _activeModule = null;
     document.getElementById('page-welcome').classList.add('active');
     document.getElementById('page-editor').classList.remove('active');
+    document.getElementById('page-overview').classList.remove('active');
     document.getElementById('page-search').classList.remove('active');
     document.getElementById('rightPanelContent').innerHTML = '';
     document.getElementById('headerWorkspaceLabel').textContent = 'JAI Creator Studio';
@@ -322,6 +363,7 @@
   Object.assign(window.App, {
     init,
     toggleSection,
+    openOverview,
     openEditor,
     showWelcome,
     updateStats,
