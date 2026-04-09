@@ -42,6 +42,7 @@
         nsfw:         false,
         visibility:   'private',
         category:     '',
+        favorite:     false,
         jai_tags:     [],
         images:       [],
         activeImageId: null,
@@ -140,7 +141,8 @@
       description: '',
       entries:     [],
       versions:    [],
-      tags:        []
+      tags:        [],
+      favorite:    false
     };
   }
 
@@ -173,6 +175,7 @@
       backstory:      '',
       customFields:   [],
       isActive:       false,
+      favorite:       false,
       versions:       [],
       tags:           []
     };

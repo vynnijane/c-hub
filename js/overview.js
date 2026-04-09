@@ -1,16 +1,42 @@
 /* ── OVERVIEW.JS — Gallery/List overview pages ──────────────────────────────
  * Provides thumbnail grid + toolbar + folders + sorting + tag filter
  * for Characters, Lorebooks, and Personas modules.
+ * Mirrors ChroniclerEditor layout: title header, icon-button toolbar,
+ * search, sort dropdown, tag filter, favorites, always-visible
+ * "Click to Create" placeholder card.
  * ─────────────────────────────────────────────────────────────────────── */
 (function () {
   'use strict';
 
   /* ── Per-module view state ── */
   const _state = {
-    characters: { search: '', sort: 'updated-desc', tags: [], folderId: null, folderName: '', batch: false, selected: new Set() },
-    lorebooks:  { search: '', sort: 'updated-desc', tags: [], folderId: null, folderName: '', batch: false, selected: new Set() },
-    personas:   { search: '', sort: 'updated-desc', tags: [], folderId: null, folderName: '', batch: false, selected: new Set() },
+    characters: { search: '', sort: 'created-desc', tags: [], folderId: null, folderName: '', batch: false, selected: new Set(), favoritesOnly: false },
+    lorebooks:  { search: '', sort: 'created-desc', tags: [], folderId: null, folderName: '', batch: false, selected: new Set(), favoritesOnly: false },
+    personas:   { search: '', sort: 'created-desc', tags: [], folderId: null, folderName: '', batch: false, selected: new Set(), favoritesOnly: false },
   };
+
+  /* ── Labels ── */
+  const TITLES = {
+    characters: 'CHARACTERS',
+    lorebooks:  'LOREBOOKS',
+    personas:   'PERSONAS',
+  };
+  const SINGULAR = {
+    characters: 'Character',
+    lorebooks:  'Lorebook',
+    personas:   'Persona',
+  };
+  const PLACEHOLDERS = {
+    characters: 'Search by name…',
+    lorebooks:  'Search by name…',
+    personas:   'Search by name…',
+  };
+
+  /* ── Inline SVG icons (mirrors ChroniclerEditor) ── */
+  const SVG_PLUS = `<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
+  const SVG_HEART = `<svg viewBox="0 0 24 24" data-fill="on-active"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+  const SVG_CHECKLIST = `<svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>`;
+  const SVG_FOLDER_PLUS = `<svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>`;
 
   /* ── Folder storage (localStorage) ── */
   function _foldersKey(type) { return `jhub_folders_${type}`; }
@@ -53,6 +79,20 @@
     return '📄';
   }
 
+  function _getFavorite(item, type) {
+    if (type === 'characters') return !!item._jai?.favorite;
+    return !!item.favorite;
+  }
+
+  function _setFavorite(item, type, val) {
+    if (type === 'characters') {
+      item._jai = item._jai || {};
+      item._jai.favorite = !!val;
+    } else {
+      item.favorite = !!val;
+    }
+  }
+
   function _getModKey(type) {
     return type.charAt(0).toUpperCase() + type.slice(1);
   }
@@ -77,6 +117,9 @@
   /* ── Filter + sort ── */
   function _filter(items, state, type) {
     let result = items.filter(i => _getFolderId(i, type) === state.folderId);
+    if (state.favoritesOnly) {
+      result = result.filter(i => _getFavorite(i, type));
+    }
     if (state.search) {
       const q = state.search.toLowerCase();
       result = result.filter(i => _getName(i, type).toLowerCase().includes(q));
@@ -99,7 +142,7 @@
       case 'created-desc': return arr.sort((a, b) => b.createdAt - a.createdAt);
       case 'updated-asc':  return arr.sort((a, b) => a.updatedAt - b.updatedAt);
       case 'updated-desc': return arr.sort((a, b) => b.updatedAt - a.updatedAt);
-      default:             return arr.sort((a, b) => b.updatedAt - a.updatedAt);
+      default:             return arr.sort((a, b) => b.createdAt - a.createdAt);
     }
   }
 
@@ -119,6 +162,7 @@
 
     container.innerHTML = `
       <div class="overview-page-inner">
+        ${_renderTitle(module)}
         ${_renderBreadcrumb(module, state)}
         ${_renderToolbar(module, state, allItems)}
         ${_renderBatchBar(module, state)}
@@ -127,6 +171,16 @@
             ? _renderListContent(module, state, sorted, visibleFolders)
             : _renderGridContent(module, state, sorted, visibleFolders)}
         </div>
+      </div>
+    `;
+  }
+
+  /* ── Title header ── */
+  function _renderTitle(module) {
+    const title = TITLES[module] || module.toUpperCase();
+    return `
+      <div class="overview-title-header">
+        <h1 class="overview-title">${title}</h1>
       </div>
     `;
   }
@@ -149,16 +203,15 @@
 
   /* ── Toolbar ── */
   function _renderToolbar(module, state, allItems) {
-    const modKey  = _getModKey(module);
-    const isChars = module === 'characters';
+    const modKey = _getModKey(module);
 
     const sortOptions = [
-      { value: 'updated-desc', label: 'Recently updated' },
-      { value: 'updated-asc',  label: 'Least recently updated' },
-      { value: 'created-desc', label: 'Newest first' },
-      { value: 'created-asc',  label: 'Oldest first' },
-      { value: 'name-asc',     label: 'Name A → Z' },
-      { value: 'name-desc',    label: 'Name Z → A' },
+      { value: 'created-desc', label: 'Date Created (Newest First)' },
+      { value: 'created-asc',  label: 'Date Created (Oldest First)' },
+      { value: 'updated-desc', label: 'Last Updated (Newest First)' },
+      { value: 'updated-asc',  label: 'Last Updated (Oldest First)' },
+      { value: 'name-asc',     label: 'Name (A → Z)' },
+      { value: 'name-desc',    label: 'Name (Z → A)' },
     ];
 
     const sortHTML = sortOptions.map(o =>
@@ -176,35 +229,32 @@
     return `
       <div class="overview-toolbar">
         <div class="overview-toolbar-left">
-          <button class="btn btn-ember btn-sm"
-            onclick="App.Modules.${modKey}.newEntity()">+ New</button>
-          ${isChars
-            ? `<button class="btn btn-ghost btn-sm"
-                onclick="document.getElementById('globalImportFile').click()">⬆ Import</button>`
-            : ''}
-          <button class="btn btn-ghost btn-sm${state.batch ? ' btn-active' : ''}"
-            onclick="App.Overview.toggleBatch('${module}')">Select</button>
-          <button class="btn btn-ghost btn-sm"
-            onclick="App.Overview.newFolder('${module}')">📁 New Folder</button>
+          <button class="icon-btn" title="New ${SINGULAR[module]}"
+            onclick="App.Modules.${modKey}.newEntity()">${SVG_PLUS}</button>
+          <button class="icon-btn${state.favoritesOnly ? ' active' : ''}"
+            title="${state.favoritesOnly ? 'Show all' : 'Show favorites only'}"
+            onclick="App.Overview.toggleFavoritesOnly('${module}')">${SVG_HEART}</button>
+          <button class="icon-btn${state.batch ? ' active' : ''}" title="Batch select"
+            onclick="App.Overview.toggleBatch('${module}')">${SVG_CHECKLIST}</button>
+          <button class="icon-btn" title="New folder"
+            onclick="App.Overview.newFolder('${module}')">${SVG_FOLDER_PLUS}</button>
         </div>
         <div class="overview-toolbar-right">
           <div class="overview-search-wrap">
             <span class="overview-search-icon">🔍</span>
-            <input class="overview-search-input" placeholder="Search…"
+            <input class="overview-search-input" placeholder="${PLACEHOLDERS[module]}"
               value="${App.UI.esc(state.search)}"
               oninput="App.Overview.handleSearch('${module}', this.value)">
-          </div>
-          <div class="overview-tag-wrap">
-            <button class="btn btn-ghost btn-sm"
-              onclick="App.Overview.toggleTagDropdown('${module}', this)">
-              🏷 Tags${state.tags.length ? ` <span style="color:var(--ember)">(${state.tags.length})</span>` : ''}
-            </button>
-            ${selectedTagsHTML}
           </div>
           <select class="overview-sort-select"
             onchange="App.Overview.applySort('${module}', this.value)">
             ${sortHTML}
           </select>
+          <button class="overview-tag-btn${state.tags.length ? ' has-tags' : ''}"
+            onclick="App.Overview.toggleTagDropdown('${module}', this)">
+            Tag Filter${state.tags.length ? ` (${state.tags.length})` : ''}
+          </button>
+          <div class="overview-tag-wrap">${selectedTagsHTML}</div>
         </div>
       </div>
     `;
@@ -236,6 +286,7 @@
   function _renderGridContent(module, state, items, folders) {
     const icon   = _getIcon(module);
     const modKey = _getModKey(module);
+    const title  = SINGULAR[module];
     const { esc } = App.UI;
 
     const folderCards = folders.map(f => {
@@ -273,17 +324,11 @@
       `;
     }).join('');
 
-    if (!items.length && !folders.length) {
-      return `<div class="empty-state" style="margin-top:60px;">
-        <div class="empty-icon">${icon}</div>
-        <div class="empty-text">No ${module} yet.<br>Create one to get started.</div>
-      </div>`;
-    }
-
     const itemCards = items.map(item => {
       const name   = _getName(item, module);
       const thumb  = _getThumb(item);
       const isSel  = state.batch && state.selected.has(item.id);
+      const isFav  = _getFavorite(item, module);
       const nsfw   = module === 'characters' && item._jai?.nsfw
         ? `<span class="ov-card-nsfw">NSFW</span>` : '';
       const active = module === 'personas' && item.isActive
@@ -297,6 +342,9 @@
         <div class="ov-card item-card${isSel ? ' selected' : ''}"
              onclick="${clickAction}"
              data-id="${item.id}">
+          <button class="ov-card-fav${isFav ? ' active' : ''}"
+            onclick="event.stopPropagation(); App.Overview.toggleFavorite('${module}', '${item.id}')"
+            title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">${isFav ? '♥' : '♡'}</button>
           <div class="ov-card-body">
             ${thumb
               ? `<img class="ov-card-img" src="${thumb}" alt="">`
@@ -308,16 +356,27 @@
               </div>` : ''}
           </div>
           <div class="ov-card-label">
-            <span class="ov-card-name">${App.UI.esc(name)}</span>
+            <span class="ov-card-name">${esc(name)}</span>
           </div>
         </div>
       `;
     }).join('');
 
+    // Always show "Click to Create" placeholder card as the last tile
+    const placeholderCard = `
+      <div class="ov-placeholder-card"
+           onclick="App.Modules.${modKey}.newEntity()"
+           title="Create a new ${title.toLowerCase()}">
+        <div class="ov-placeholder-icon">+</div>
+        <div class="ov-placeholder-label">Click to Create<br>a ${title}</div>
+      </div>
+    `;
+
     return `
       <div class="ov-grid">
         ${folderCards}
         ${itemCards}
+        ${placeholderCard}
       </div>
     `;
   }
@@ -325,6 +384,8 @@
   /* ── List view (Lorebooks) ── */
   function _renderListContent(module, state, items, folders) {
     const { esc, fmtDateShort } = App.UI;
+    const modKey = _getModKey(module);
+    const title  = SINGULAR[module];
 
     const folderRows = folders.map(f => {
       const folderItems = _getItems(module).filter(i => _getFolderId(i, module) === f.id);
@@ -348,17 +409,11 @@
       `;
     }).join('');
 
-    if (!items.length && !folders.length) {
-      return `<div class="empty-state" style="margin-top:60px;">
-        <div class="empty-icon">📚</div>
-        <div class="empty-text">No lorebooks yet.<br>Create one to get started.</div>
-      </div>`;
-    }
-
     const itemRows = items.map(item => {
       const name    = _getName(item, module);
       const tags    = _getTags(item, module);
       const isSel   = state.batch && state.selected.has(item.id);
+      const isFav   = _getFavorite(item, module);
       const count   = item.entries?.length || 0;
       const updated = fmtDateShort(item.updatedAt);
 
@@ -385,16 +440,29 @@
               ${tagsHTML}
             </div>
           </div>
+          <button class="ov-list-fav${isFav ? ' active' : ''}"
+            onclick="event.stopPropagation(); App.Overview.toggleFavorite('${module}', '${item.id}')"
+            title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">${isFav ? '♥' : '♡'}</button>
           <button class="ov-list-delete"
             onclick="event.stopPropagation(); App.Modules.Lorebooks.deleteEntity('${item.id}')">✕</button>
         </div>
       `;
     }).join('');
 
+    // Always visible placeholder row at bottom
+    const placeholderRow = `
+      <div class="ov-list-placeholder"
+           onclick="App.Modules.${modKey}.newEntity()">
+        <span class="ov-list-placeholder-icon">+</span>
+        <span>Click to Create a ${title}</span>
+      </div>
+    `;
+
     return `
       <div class="ov-list">
         ${folderRows}
         ${itemRows}
+        ${placeholderRow}
       </div>
     `;
   }
@@ -422,6 +490,21 @@
     render(module);
   }
 
+  function toggleFavoritesOnly(module) {
+    _state[module].favoritesOnly = !_state[module].favoritesOnly;
+    render(module);
+  }
+
+  async function toggleFavorite(module, id) {
+    const items = _getItems(module);
+    const item  = items.find(i => i.id === id);
+    if (!item) return;
+    _setFavorite(item, module, !_getFavorite(item, module));
+    item.updatedAt = Date.now();
+    await App.DB.put(_getDbStore(module), item);
+    render(module);
+  }
+
   function toggleTagDropdown(module, btn) {
     // Close any existing dropdown
     document.querySelectorAll('.overview-tag-dropdown').forEach(el => el.remove());
@@ -431,7 +514,7 @@
     const avail    = allTags.filter(t => !_state[module].tags.includes(t));
 
     if (!avail.length) {
-      App.UI.toast('No more tags to filter. Add tags in the character editor.', 'info');
+      App.UI.toast('No tags to filter. Add tags in the editor first.', 'info');
       return;
     }
 
@@ -617,6 +700,8 @@
     addTag,
     removeTag,
     toggleTagDropdown,
+    toggleFavoritesOnly,
+    toggleFavorite,
     enterFolder,
     exitFolder,
     toggleBatch,
