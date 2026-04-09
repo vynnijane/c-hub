@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JAI Creator Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header class="app-header">
+  <div class="app-logo">
+    <div class="logo-dot"></div>
+    JAI Creator Studio
+  </div>
+  <div class="header-center">
+    <span class="header-workspace-label" id="headerWorkspaceLabel">Your character workshop</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="App.openSearch()" title="Search (Ctrl+F)">🔍 Search</button>
+    <button class="btn btn-ghost btn-sm" onclick="App.exportWorkspace()">⬇ Export</button>
+    <button class="btn btn-ghost btn-sm" onclick="App.importWorkspace()">⬆ Import</button>
+    <button class="btn btn-ghost btn-sm" id="gdriveBtn" onclick="App.openSettings()" title="Settings & Google Drive">
+      <div class="gdrive-status">
+        <div class="gdrive-dot" id="gdriveDot"></div>
+        <span id="gdriveLabel">Drive</span>
+      </div>
+    </button>
+    <button class="btn btn-ghost btn-sm btn-icon" onclick="App.openSettings()" title="Settings">⚙</button>
+  </div>
+</header>
+
+<!-- ══════════════ WORKSPACE ══════════════ -->
+<div class="workspace">
+
+  <!-- LEFT SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-body">
+
+      <!-- Global search shortcut -->
+      <button class="sidebar-search-btn" onclick="App.openSearch()">
+        🔍 &nbsp; Search all
+      </button>
+
+      <!-- Characters -->
+      <div class="mod-section" id="section-characters">
+        <div class="mod-section-header" onclick="App.toggleSection('characters')">
+          <span class="mod-section-icon">🎭</span>
+          <span class="mod-section-name">Characters</span>
+          <span class="mod-section-count" id="count-characters">0</span>
+          <button class="mod-section-add" title="New character"
+            onclick="event.stopPropagation(); App.Modules.Characters.newEntity()">+</button>
+          <span class="mod-section-chevron">›</span>
+        </div>
+        <div class="mod-section-list" id="list-characters"></div>
+      </div>
+
+      <!-- Lorebooks -->
+      <div class="mod-section" id="section-lorebooks">
+        <div class="mod-section-header" onclick="App.toggleSection('lorebooks')">
+          <span class="mod-section-icon">📚</span>
+          <span class="mod-section-name">Lorebooks</span>
+          <span class="mod-section-count" id="count-lorebooks">0</span>
+          <button class="mod-section-add" title="New lorebook"
+            onclick="event.stopPropagation(); App.Modules.Lorebooks.newEntity()">+</button>
+          <span class="mod-section-chevron">›</span>
+        </div>
+        <div class="mod-section-list" id="list-lorebooks"></div>
+      </div>
+
+      <!-- Personas -->
+      <div class="mod-section" id="section-personas">
+        <div class="mod-section-header" onclick="App.toggleSection('personas')">
+          <span class="mod-section-icon">👤</span>
+          <span class="mod-section-name">Personas</span>
+          <span class="mod-section-count" id="count-personas">0</span>
+          <button class="mod-section-add" title="New persona"
+            onclick="event.stopPropagation(); App.Modules.Personas.newEntity()">+</button>
+          <span class="mod-section-chevron">›</span>
+        </div>
+        <div class="mod-section-list" id="list-personas"></div>
+      </div>
+
+      <!-- Presets -->
+      <div class="mod-section" id="section-presets">
+        <div class="mod-section-header" onclick="App.toggleSection('presets')">
+          <span class="mod-section-icon">📋</span>
+          <span class="mod-section-name">Presets</span>
+          <span class="mod-section-count" id="count-presets">0</span>
+          <button class="mod-section-add" title="New preset"
+            onclick="event.stopPropagation(); App.Modules.Presets.newEntity()">+</button>
+          <span class="mod-section-chevron">›</span>
+        </div>
+        <div class="mod-section-list" id="list-presets"></div>
+      </div>
+
+      <!-- Notes -->
+      <div class="mod-section" id="section-notes">
+        <div class="mod-section-header" onclick="App.toggleSection('notes')">
+          <span class="mod-section-icon">📝</span>
+          <span class="mod-section-name">Notes</span>
+          <span class="mod-section-count" id="count-notes">0</span>
+          <button class="mod-section-add" title="New note"
+            onclick="event.stopPropagation(); App.Modules.Notes.newEntity()">+</button>
+          <span class="mod-section-chevron">›</span>
+        </div>
+        <div class="mod-section-list" id="list-notes"></div>
+      </div>
+
+    </div><!-- /sidebar-body -->
+
+    <div class="sidebar-footer">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="App.saveToGoogleDrive()">☁ Save to Drive</button>
+      <button class="btn btn-ghost btn-sm" onclick="App.loadFromGoogleDrive()">↓ Load</button>
+    </div>
+  </nav><!-- /sidebar -->
+
+  <!-- CENTRE CONTENT -->
+  <main class="content-area">
+
+    <!-- Welcome page -->
+    <div class="content-page active" id="page-welcome">
+      <div class="welcome-screen">
+        <div class="welcome-title">Your character workshop.</div>
+        <div class="welcome-sub">Build, version, and manage your JanitorAI characters — all in one place, all in your browser.</div>
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('globalImportFile').click()">
+          <div class="drop-icon">📦</div>
+          <div>Drop a character card here or click to import</div>
+          <div style="font-size:11px;color:var(--text4)">JSON and PNG character cards supported</div>
+        </div>
+        <div class="welcome-actions">
+          <button class="btn btn-ember" onclick="App.Modules.Characters.newEntity()">+ New Character</button>
+          <button class="btn btn-ghost" onclick="App.Modules.Lorebooks.newEntity()">+ New Lorebook</button>
+          <button class="btn btn-ghost" onclick="App.Modules.Personas.newEntity()">+ New Persona</button>
+        </div>
+        <input type="file" id="globalImportFile" accept=".json,.png,image/png"
+          onchange="App.Modules.Characters.handleImport(this.files[0]).then(()=>{ this.value=''; })">
+      </div>
+    </div>
+
+    <!-- Editor page (shared by all modules) -->
+    <div class="content-page" id="page-editor">
+      <div class="editor-header">
+        <div class="editor-tabs-bar" id="editorTabsBar"></div>
+        <div class="editor-actions-bar" id="editorActionsBar"></div>
+      </div>
+      <div class="editor-scroll" id="editorContent"></div>
+    </div>
+
+    <!-- Search results page -->
+    <div class="content-page" id="page-search">
+      <div style="padding:24px;">
+        <div style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;">Find &amp; Replace</div>
+        <div class="field-row" style="margin-bottom:12px;">
+          <div class="field-group">
+            <div class="field-label">Find</div>
+            <input class="field-input" id="replaceFind" placeholder="Search term…">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Replace with</div>
+            <input class="field-input" id="replaceWith" placeholder="Replacement…">
+          </div>
+        </div>
+        <button class="btn btn-danger" onclick="App.handleReplaceAll()">Replace All</button>
+        <p style="font-size:12px;color:var(--text4);margin-top:10px;">
+          Replaces across all modules — characters, lorebooks, personas, presets, and notes.
+          This operation cannot be undone.
+        </p>
+      </div>
+    </div>
+
+  </main><!-- /content-area -->
+
+  <!-- RIGHT CONTEXT PANEL -->
+  <aside class="right-panel">
+    <div id="rightPanelContent" style="flex:1;display:flex;flex-direction:column;overflow:hidden;"></div>
+  </aside>
+
+</div><!-- /workspace -->
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <span>Characters: <span id="statCards">0</span></span>
+  <span>Lorebooks: <span id="statLorebooks">0</span></span>
+  <span>Personas: <span id="statPersonas">0</span></span>
+  <span>Notes: <span id="statNotes">0</span></span>
+  <span>Active: <span id="statActive">—</span></span>
+  <span>Storage: <span id="statStorage">—</span></span>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- WORKSPACE IMPORT FILE INPUT (hidden) -->
+<input type="file" id="workspaceImportFile" accept=".json"
+  onchange="App.handleWorkspaceImport(event)">
+
+<!-- ══════════════ MODALS ══════════════ -->
+
+<!-- Confirm dialog -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal confirm-modal" style="width:380px;">
+    <div class="modal-title" style="font-size:16px;">Confirm</div>
+    <p class="confirm-msg" id="confirmMsg"></p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="confirmCancelBtn">Cancel</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Prompt (input) dialog -->
+<div class="modal-overlay" id="promptModal">
+  <div class="modal" style="width:380px;">
+    <div class="modal-title" style="font-size:16px;" id="promptLabel">Enter value</div>
+    <div class="field-group">
+      <input class="field-input" id="promptInput">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="promptCancelBtn">Cancel</button>
+      <button class="btn btn-ember" id="promptOkBtn">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image detail modal -->
+<div class="modal-overlay" id="imgModal">
+  <div class="modal" style="width:480px;">
+    <div class="modal-title" id="imgModalTitle">Image</div>
+    <div class="modal-body">
+      <div class="img-modal-preview">
+        <img id="imgModalPreview" style="width:100%;height:100%;object-fit:cover;" src="" alt="">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Label</div>
+        <input class="field-input" id="imgModalLabel" placeholder="e.g. Main, NSFW ver, Summer outfit…">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Image prompt <span class="field-hint">what you used to generate this</span></div>
+        <textarea class="prompt-box" id="imgModalPrompt"
+          placeholder="masterpiece, 1girl, silver hair, red eyes…"></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Negative prompt</div>
+        <textarea class="prompt-box" id="imgModalNeg"
+          placeholder="lowres, bad anatomy, worst quality…" style="min-height:44px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="App.Modules.Characters.closeImgModal()">Cancel</button>
+      <button class="btn btn-danger btn-sm" onclick="App.Modules.Characters.deleteCurrentImg()">Delete</button>
+      <button class="btn btn-ember" onclick="App.Modules.Characters.saveImgModal()">
+        Set Active &amp; Save
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Diff modal -->
+<div class="modal-overlay" id="diffModal">
+  <div class="modal modal-wide" style="max-height:85vh;">
+    <div class="modal-title" id="diffModalTitle">Version Diff</div>
+    <div class="modal-body" id="diffModalContent" style="overflow-y:auto;max-height:65vh;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="App.UI.closeModal('diffModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Search overlay -->
+<div class="modal-overlay" id="searchOverlay" onclick="if(event.target===this)App.closeSearch()">
+  <div class="search-box" onclick="event.stopPropagation()">
+    <div class="search-input-wrap">
+      <span style="font-size:16px;color:var(--text3)">🔍</span>
+      <input class="search-input" id="searchInput" placeholder="Search characters, lorebooks, personas…"
+        oninput="App.handleSearchInput(this.value)"
+        onkeydown="if(event.key==='Escape')App.closeSearch()">
+      <button class="btn btn-ghost btn-sm" onclick="App.closeSearch()">✕</button>
+    </div>
+    <div class="search-results" id="searchResultsList">
+      <div class="empty-state"><div class="empty-text">Type to search across all modules…</div></div>
+    </div>
+    <div class="search-footer">
+      <span>↵ open · Esc close</span>
+      <span style="margin-left:auto;">
+        <a href="#" onclick="event.preventDefault();App.closeSearch();document.getElementById('page-search').classList.add('active');document.getElementById('page-welcome').classList.remove('active');document.getElementById('page-editor').classList.remove('active');">
+          Find &amp; Replace →
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal" style="width:460px;">
+    <div class="modal-title">Settings</div>
+    <div class="modal-body">
+
+      <div class="section-divider">
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label">Token counter</div>
+        <div class="section-divider-line"></div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Token limit <span class="field-hint">per character (all fields combined)</span></div>
+        <input class="field-input" id="settingsTokenLimit" type="number" placeholder="4096" min="100" max="200000">
+        <div style="font-size:11px;color:var(--text4);margin-top:4px;">
+          Common limits: 4096 (GPT-3.5), 8192 (GPT-4), 16384 (Claude), 32768 (extended)
+        </div>
+      </div>
+
+      <div class="section-divider">
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label">Google Drive sync</div>
+        <div class="section-divider-line"></div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Google OAuth Client ID</div>
+        <input class="field-input" id="settingsClientId" placeholder="xxxx.apps.googleusercontent.com">
+        <div style="font-size:11px;color:var(--text4);margin-top:4px;">
+          Create a Client ID at <strong>console.cloud.google.com</strong> → APIs &amp; Services → Credentials.
+          Set Authorized JS origins to your domain.
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div class="gdrive-status">
+          <div class="gdrive-dot" id="gdriveDot2"></div>
+          <span id="gdriveLabel2" style="font-size:12px;color:var(--text3)">Not connected</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="App.Sync.requestToken()">Connect</button>
+        <button class="btn btn-ghost btn-sm" onclick="App.Sync.disconnect()">Disconnect</button>
+      </div>
+
+      <div class="section-divider">
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label">Keyboard shortcuts</div>
+        <div class="section-divider-line"></div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);line-height:2;">
+        <div><kbd style="font-family:monospace;background:var(--bg4);padding:1px 5px;border-radius:3px;">Ctrl/⌘ + S</kbd> Save current entity</div>
+        <div><kbd style="font-family:monospace;background:var(--bg4);padding:1px 5px;border-radius:3px;">Ctrl/⌘ + N</kbd> New character</div>
+        <div><kbd style="font-family:monospace;background:var(--bg4);padding:1px 5px;border-radius:3px;">Ctrl/⌘ + F</kbd> Open search</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="App.UI.closeModal('settingsModal')">Cancel</button>
+      <button class="btn btn-ember" onclick="App.saveSettings()">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SCRIPTS ══════════════ -->
+<!-- Load order matters: utilities first, then modules, then app orchestrator -->
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/tokens.js"></script>
+<script src="js/diff.js"></script>
+<script src="js/import-export.js"></script>
+<script src="js/bio-editor.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/search.js"></script>
+<script src="js/modules/characters.js"></script>
+<script src="js/modules/lorebooks.js"></script>
+<script src="js/modules/personas.js"></script>
+<script src="js/modules/presets.js"></script>
+<script src="js/modules/notes.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

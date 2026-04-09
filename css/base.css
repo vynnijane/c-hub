@@ -1,0 +1,128 @@
+/* ── CSS CUSTOM PROPERTIES ── */
+:root {
+  /* Colors */
+  --bg:            #0d0c0b;
+  --bg2:           #131210;
+  --bg3:           #1a1815;
+  --bg4:           #221f1b;
+  --border:        #2e2a24;
+  --border2:       #3d3830;
+
+  /* Ember (primary accent) */
+  --ember:         #e8622a;
+  --ember2:        #c44d1a;
+  --ember-glow:    rgba(232,98,42,0.12);
+  --ember-subtle:  rgba(232,98,42,0.06);
+
+  /* Gold (secondary accent) */
+  --gold:          #c9a84c;
+  --gold2:         #a8883a;
+
+  /* Text */
+  --text:          #e8e2d9;
+  --text2:         #b5aa9a;
+  --text3:         #7a7265;
+  --text4:         #4a4438;
+
+  /* Semantic */
+  --success:       #4caf82;
+  --danger:        #c44d4d;
+  --warn:          #c9a84c;
+
+  /* Layout */
+  --sidebar-w:     264px;
+  --right-w:       224px;
+  --header-h:      52px;
+  --stats-h:       32px;
+  --tab-h:         44px;
+
+  /* Misc */
+  --radius:        7px;
+  --radius-lg:     10px;
+  --transition:    0.14s ease;
+}
+
+/* ── RESET ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── BASE ── */
+html { height: 100%; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--ember); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button, input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text4); }
+
+/* ── ANIMATIONS ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--ember); }
+  50%       { opacity: 0.55; box-shadow: 0 0 3px var(--ember); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { transform: translateX(16px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── TYPOGRAPHY HELPERS ── */
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+.font-serif { font-family: 'Playfair Display', serif; }
+
+.text-xs   { font-size: 11px; }
+.text-sm   { font-size: 12.5px; }
+.text-base { font-size: 14px; }
+.text-lg   { font-size: 16px; }
+
+.text-muted  { color: var(--text3); }
+.text-dimmed { color: var(--text4); }
+.text-ember  { color: var(--ember); }
+.text-gold   { color: var(--gold); }
+.text-danger { color: var(--danger); }
+.text-success{ color: var(--success); }
+
+/* ── UTILITY ── */
+.hidden { display: none !important; }
+.flex { display: flex; }
+.flex-1 { flex: 1; }
+.items-center { align-items: center; }
+.gap-1 { gap: 4px; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
